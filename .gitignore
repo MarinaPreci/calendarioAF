@@ -1,4 +1,3 @@
-# 🧩 Archivos y carpetas que no deben subirse al repositorio
 node_modules
 dist
 .env
