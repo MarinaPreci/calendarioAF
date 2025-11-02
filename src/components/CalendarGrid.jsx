@@ -11,15 +11,13 @@ function getColorForType(type){
   return t ? t.color : '#555';
 }
 
-// Colores para los encabezados de cada mes
 const MONTH_COLORS = [
   'bg-red-200', 'bg-orange-200', 'bg-yellow-200', 'bg-green-200',
   'bg-teal-200', 'bg-blue-200', 'bg-indigo-200', 'bg-purple-200',
   'bg-pink-200', 'bg-gray-200', 'bg-lime-200', 'bg-rose-200'
 ];
 
-export default function CalendarGrid({ races, onOpenRace }) {
-  // Meses: noviembre y diciembre 2025 + todos 2026
+export default function CalendarGrid({ races = [], onOpenRace = () => {}, onAddRace = () => {} }) {
   const months = [
     new Date(2025, 10, 1),
     new Date(2025, 11, 1),
@@ -45,14 +43,12 @@ export default function CalendarGrid({ races, onOpenRace }) {
   });
 
   return (
-    // Fondo pastel de todo el calendario
     <div className="grid gap-4 p-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 bg-blue-50 min-h-screen">
       {months.map((monthStart, idx) => (
         <div
           key={idx}
           className="bg-white/80 rounded-2xl shadow-sm p-2 hover:shadow-lg transition-shadow duration-200 w-full"
         >
-          {/* Encabezado del mes con color suave */}
           <div
             className={`text-center text-sm font-semibold mb-2 p-2 rounded ${MONTH_COLORS[idx % MONTH_COLORS.length]} text-gray-900 bg-gradient-to-r from-white/30 to-white/10`}
           >
@@ -70,10 +66,15 @@ export default function CalendarGrid({ races, onOpenRace }) {
             fixedWeekCount={false}
             initialDate={monthStart}
             events={eventsByMonth[idx]}
-            selectable={false}
+            selectable={true}
+            selectMirror={true}
+            dateClick={(info) => {
+              // seguridad: solo llamamos si onAddRace es función
+              if (typeof onAddRace === 'function') onAddRace(info.dateStr || info.date);
+            }}
             eventClick={(info) => {
               info.jsEvent.preventDefault();
-              onOpenRace(info.event.extendedProps);
+              if (typeof onOpenRace === 'function') onOpenRace(info.event.extendedProps);
             }}
             eventClassNames={() => 'rounded-md cursor-pointer hover:scale-105 transform transition duration-200 ease-out shadow-sm hover:shadow-md'}
             dayCellClassNames={() => 'p-1'}
@@ -82,4 +83,5 @@ export default function CalendarGrid({ races, onOpenRace }) {
       ))}
     </div>
   );
+  
 }

@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { RACE_TYPES } from '../utils/raceTypes';
 
-export default function AddRaceModal({ onClose, onSaved }){
+export default function AddRaceModal({ onClose, onSaved, defaultDate }) {
   const [name, setName] = useState('');
-  const [date, setDate] = useState('2026-01-01');
+  const [date, setDate] = useState(defaultDate || '2026-01-01'); // 👈 usa la fecha clicada si hay
   const [type, setType] = useState(RACE_TYPES[0].id);
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
@@ -67,7 +67,7 @@ export default function AddRaceModal({ onClose, onSaved }){
       onChange={e => setLocation(e.target.value)}
     />
 
-    <label className="block text-sm text-pink-800">Descripción (opcional)</label>
+    <label className="block text-sm text-pink-800">URL de la prueba</label>
     <textarea
       className="w-full border border-pink-200 p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-pink-300"
       value={description}

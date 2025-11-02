@@ -4,13 +4,13 @@ import CalendarGrid from './components/CalendarGrid';
 import AddRaceModal from './components/AddRaceModal';
 import RaceDetailsModal from './components/RaceDetailsModal';
 
-export default function App(){
+export default function App() {
   const [races, setRaces] = useState([]);
   const [selectedRace, setSelectedRace] = useState(null);
-  const [showAdd, setShowAdd] = useState(false);
+  const [addingDate, setAddingDate] = useState(null); // 👈 almacena la fecha donde se clicó
   const YEAR = 2026;
 
-  async function fetchRaces(){
+  async function fetchRaces() {
     const { data, error } = await supabase
       .from('races')
       .select('*')
@@ -19,22 +19,24 @@ export default function App(){
     else setRaces(data || []);
   }
 
-  useEffect(()=>{
+  useEffect(() => {
     fetchRaces();
 
-    const racesChannel = supabase.channel('public:races')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'races' }, payload => {
+    const racesChannel = supabase
+      .channel('public:races')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'races' }, () => {
         fetchRaces();
       })
       .subscribe();
 
-    const partsChannel = supabase.channel('public:participants')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'participants' }, payload => {
+    const partsChannel = supabase
+      .channel('public:participants')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'participants' }, () => {
         fetchRaces();
       })
       .subscribe();
 
-    return ()=>{
+    return () => {
       supabase.removeChannel(racesChannel);
       supabase.removeChannel(partsChannel);
     };
@@ -42,32 +44,26 @@ export default function App(){
 
   return (
     <div className="min-h-screen bg-gray-50">
-     <header className="sticky top-0 z-10 bg-blue-200 border-b p-3 flex items-center justify-between shadow-md">
-  <h1 className="text-lg font-semibold text-gray-900">Calendario de Carreras {YEAR}</h1>
-  <div className="flex gap-2">
-    <button
-      className="px-3 py-1 rounded bg-blue-500 text-white text-sm hover:bg-blue-600"
-      onClick={() => setShowAdd(true)}
-    >
-      + Añadir
-    </button>
-  </div>
-</header>
-
+      <header className="sticky top-0 z-10 bg-blue-200 border-b p-3 flex items-center justify-between shadow-md">
+        <h1 className="text-lg font-semibold text-gray-900">
+          Calendario de Carreras {YEAR}
+        </h1>
+      </header>
 
       <main className="p-2">
         <CalendarGrid
-          year={YEAR}
           races={races}
           onOpenRace={(race) => setSelectedRace(race)}
+          onAddRace={(date) => setAddingDate(date)} // 👈 clic en día => abre modal con fecha
         />
       </main>
 
-      {showAdd && (
+      {addingDate && (
         <AddRaceModal
-          onClose={() => setShowAdd(false)}
+          defaultDate={addingDate} // 👈 le pasamos la fecha clicada
+          onClose={() => setAddingDate(null)}
           onSaved={() => {
-            setShowAdd(false);
+            setAddingDate(null);
             fetchRaces();
           }}
         />
