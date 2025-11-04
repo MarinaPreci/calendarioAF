@@ -2,33 +2,34 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { RACE_TYPES } from '../utils/raceTypes';
 
-function getTypeLabel(t){
-  const it = RACE_TYPES.find(r=>r.id===t);
+function getTypeLabel(t) {
+  const it = RACE_TYPES.find(r => r.id === t);
   return it ? it.label : t;
 }
 
-export default function RaceDetailsModal({ race, onClose, onChanged }){
+export default function RaceDetailsModal({ race, onClose, onChanged }) {
   const [participants, setParticipants] = useState([]);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(race);
 
-  useEffect(()=>{
+  useEffect(() => {
     fetchParticipants();
     setForm(race);
   }, [race]);
 
-  async function fetchParticipants(){
+  async function fetchParticipants() {
     const { data, error } = await supabase
       .from('participants')
       .select('*')
       .eq('race_id', race.id)
       .order('joined_at', { ascending: true });
+
     if (error) console.error(error);
     else setParticipants(data || []);
   }
 
-  async function handleSaveChanges(){
+  async function handleSaveChanges() {
     setSaving(true);
     const { error } = await supabase
       .from('races')
@@ -37,9 +38,10 @@ export default function RaceDetailsModal({ race, onClose, onChanged }){
         date: form.date,
         type: form.type,
         location: form.location,
-        description: form.description
+        description: form.description,
       })
       .eq('id', race.id);
+
     setSaving(false);
     if (error) {
       alert('Error actualizando: ' + error.message);
@@ -49,7 +51,7 @@ export default function RaceDetailsModal({ race, onClose, onChanged }){
     }
   }
 
-  async function handleDelete(){
+  async function handleDelete() {
     if (!confirm('¿Eliminar esta carrera?')) return;
     const { error } = await supabase.from('races').delete().eq('id', race.id);
     if (error) {
@@ -57,6 +59,21 @@ export default function RaceDetailsModal({ race, onClose, onChanged }){
     } else {
       onClose();
       onChanged && onChanged();
+    }
+  }
+
+  async function handleJoinRace() {
+    if (!form.newParticipant?.trim()) return alert('Introduce tu nombre');
+
+    const { error } = await supabase
+      .from('participants')
+      .insert([{ race_id: race.id, display_name: form.newParticipant.trim() }]);
+
+    if (error) {
+      alert('Error al apuntarte: ' + error.message);
+    } else {
+      setForm({ ...form, newParticipant: '' });
+      fetchParticipants();
     }
   }
 
@@ -78,7 +95,7 @@ export default function RaceDetailsModal({ race, onClose, onChanged }){
             <input
               className="w-full border border-green-200 p-2 rounded"
               value={form.name}
-              onChange={e => setForm({...form, name: e.target.value})}
+              onChange={e => setForm({ ...form, name: e.target.value })}
             />
 
             <label className="block text-sm text-green-800 mt-3">Fecha</label>
@@ -86,30 +103,34 @@ export default function RaceDetailsModal({ race, onClose, onChanged }){
               type="date"
               className="w-full border border-green-200 p-2 rounded"
               value={form.date}
-              onChange={e => setForm({...form, date: e.target.value})}
+              onChange={e => setForm({ ...form, date: e.target.value })}
             />
 
             <label className="block text-sm text-green-800 mt-3">Tipo</label>
             <select
               className="w-full border border-green-200 p-2 rounded"
               value={form.type}
-              onChange={e => setForm({...form, type: e.target.value})}
+              onChange={e => setForm({ ...form, type: e.target.value })}
             >
-              {RACE_TYPES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+              {RACE_TYPES.map(t => (
+                <option key={t.id} value={t.id}>
+                  {t.label}
+                </option>
+              ))}
             </select>
 
             <label className="block text-sm text-green-800 mt-3">Ubicación</label>
             <input
               className="w-full border border-green-200 p-2 rounded"
               value={form.location || ''}
-              onChange={e => setForm({...form, location: e.target.value})}
+              onChange={e => setForm({ ...form, location: e.target.value })}
             />
 
             <label className="block text-sm text-green-800 mt-3">URL de la prueba</label>
             <textarea
               className="w-full border border-green-200 p-2 rounded"
               value={form.description || ''}
-              onChange={e => setForm({...form, description: e.target.value})}
+              onChange={e => setForm({ ...form, description: e.target.value })}
             />
           </>
         ) : (
@@ -117,10 +138,12 @@ export default function RaceDetailsModal({ race, onClose, onChanged }){
             <p className="mt-2 text-sm text-green-700">
               {getTypeLabel(form.type)} • {form.date}
             </p>
-            {form.location && <p className="text-sm text-green-600">{form.location}</p>}
+            {form.location && (
+              <p className="text-sm text-green-600">{form.location}</p>
+            )}
 
-            {form.description && (
-              form.description.startsWith('http') ? (
+            {form.description &&
+              (form.description.startsWith('http') ? (
                 <a
                   href={form.description}
                   target="_blank"
@@ -130,22 +153,86 @@ export default function RaceDetailsModal({ race, onClose, onChanged }){
                   {form.description}
                 </a>
               ) : (
-                <p className="mt-2 text-sm text-green-800">{form.description}</p>
-              )
-            )}
+                <p className="mt-2 text-sm text-green-800">
+                  {form.description}
+                </p>
+              ))}
           </>
+        )}
+
+        {/* 🏁 Lista de participantes */}
+        {!editing && (
+          <div className="mt-4">
+            <h3 className="text-md font-semibold text-green-900 mb-2">
+              Participantes
+            </h3>
+
+            {participants.length > 0 ? (
+              <ul className="text-sm text-green-800 space-y-1">
+                {participants.map(p => (
+                  <li
+                    key={p.id}
+                    className="border-b border-green-200 pb-1"
+                  >
+                    {p.display_name}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-green-600">
+                No hay participantes todavía.
+              </p>
+            )}
+
+            <div className="flex items-center gap-2 mt-3">
+              <input
+                type="text"
+                placeholder="Tu nombre"
+                className="flex-1 border border-green-200 p-2 rounded"
+                value={form.newParticipant || ''}
+                onChange={e =>
+                  setForm({ ...form, newParticipant: e.target.value })
+                }
+              />
+              <button
+                onClick={handleJoinRace}
+                className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700"
+              >
+                Apuntarme
+              </button>
+            </div>
+          </div>
         )}
 
         <div className="flex justify-end gap-2 mt-4">
           {!editing ? (
             <>
-              <button className="px-3 py-1 rounded bg-red-200 hover:bg-red-300 text-red-800" onClick={handleDelete}>Eliminar</button>
-              <button className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700" onClick={() => setEditing(true)}>Editar</button>
+              <button
+                className="px-3 py-1 rounded bg-red-200 hover:bg-red-300 text-red-800"
+                onClick={handleDelete}
+              >
+                Eliminar
+              </button>
+              <button
+                className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700"
+                onClick={() => setEditing(true)}
+              >
+                Editar
+              </button>
             </>
           ) : (
             <>
-              <button className="px-3 py-1 rounded bg-gray-300 hover:bg-gray-400" onClick={() => setEditing(false)}>Cancelar</button>
-              <button className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700" onClick={handleSaveChanges} disabled={saving}>
+              <button
+                className="px-3 py-1 rounded bg-gray-300 hover:bg-gray-400"
+                onClick={() => setEditing(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700"
+                onClick={handleSaveChanges}
+                disabled={saving}
+              >
                 {saving ? 'Guardando...' : 'Guardar'}
               </button>
             </>
