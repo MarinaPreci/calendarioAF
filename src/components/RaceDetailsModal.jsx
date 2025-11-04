@@ -81,7 +81,7 @@ export default function RaceDetailsModal({ race, onClose, onChanged }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/60 z-40 pointer-events-auto"></div>
 
-      <div className="w-full max-w-md bg-green-50 rounded-xl p-6 shadow-lg z-50">
+      <div className="w-full max-w-md bg-green-50 rounded-xl p-6 shadow-lg z-50 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-start">
           <h2 className="text-lg font-semibold text-green-900">
             {editing ? 'Editar carrera' : form.name}
@@ -184,11 +184,12 @@ export default function RaceDetailsModal({ race, onClose, onChanged }) {
               </p>
             )}
 
-            <div className="flex items-center gap-2 mt-3">
+            {/* Campo para apuntarse — versión responsive */}
+            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 mt-3">
               <input
                 type="text"
                 placeholder="Tu nombre"
-                className="flex-1 border border-green-200 p-2 rounded"
+                className="w-full md:flex-1 border border-green-200 p-2 rounded"
                 value={form.newParticipant || ''}
                 onChange={e =>
                   setForm({ ...form, newParticipant: e.target.value })
@@ -196,7 +197,7 @@ export default function RaceDetailsModal({ race, onClose, onChanged }) {
               />
               <button
                 onClick={handleJoinRace}
-                className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700"
+                className="w-full md:w-auto px-3 py-2 rounded bg-green-600 text-white hover:bg-green-700 text-sm font-medium"
               >
                 Apuntarme
               </button>
@@ -204,7 +205,7 @@ export default function RaceDetailsModal({ race, onClose, onChanged }) {
           </div>
         )}
 
-        <div className="flex justify-end gap-2 mt-4">
+        <div className="flex justify-end gap-2 mt-4 sticky bottom-0 bg-green-50 pt-3">
           {!editing ? (
             <>
               <button
