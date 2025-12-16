@@ -21,7 +21,7 @@ export default function CalendarGrid({ races = [], onOpenRace = () => {}, onAddR
   const [selectedType, setSelectedType] = useState(''); // 👈 filtro activo
 
   const months = [
-    new Date(2025, 10, 1),
+    //new Date(2025, 10, 1),
     new Date(2025, 11, 1),
     ...Array.from({ length: 12 }, (_, i) => new Date(2026, i, 1))
   ];
