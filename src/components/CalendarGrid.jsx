@@ -42,15 +42,16 @@ export default function CalendarGrid({ races = [], onOpenRace = () => {}, onAddR
       m => m.getFullYear() === d.getFullYear() && m.getMonth() === d.getMonth()
     );
     if (monthIndex !== -1) {
-      eventsByMonth[monthIndex].push({
+        eventsByMonth[monthIndex].push({
         id: r.id,
         title: r.name,
         start: r.date,
         extendedProps: r,
-        backgroundColor: getColorForType(r.type) + '44',
+        // Aumentamos la opacidad del fondo (de 44 a 66) para que se vea más sólido
+        backgroundColor: getColorForType(r.type) + '66', 
         borderColor: getColorForType(r.type),
-        textColor: '#111827',
-      });
+        textColor: '#FFFFFF', 
+    });
     }
   });
 

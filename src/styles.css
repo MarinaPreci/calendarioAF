@@ -5,21 +5,20 @@
 html, body, #root { height: 100%; }
 body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
-/* En styles.css */
-.fc {
-  --fc-page-bg-color: transparent;
-  --fc-border-color: #5580ca; /* gray-700 */
-  --fc-neutral-text-color: #d1d5db; /* gray-300 */
+/* Mejora de legibilidad en los eventos del calendario */
+.fc-event {
+  border-width: 2px !important; /* Borde más grueso para definir el color */
+  padding: 2px 4px !important;
+  font-weight: 600 !important;
+  font-size: 0.7rem !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3); /* Sombra para dar profundidad */
 }
 
-.fc-daygrid-day-number {
-  color: #f3f4f6; /* gray-100 */
-  font-size: 0.85rem;
-  padding: 4px !important;
+/* Hacer que los días del mes actual resalten más */
+.fc-daygrid-day.fc-day-today {
+  background-color: rgba(59, 130, 246, 0.1) !important; /* Azul muy sutil */
 }
 
-.fc-col-header-cell-cushion {
-  color: #5580ca; /* gray-400 */
-  text-transform: capitalize;
-  font-size: 0.75rem;
+.fc-daygrid-event-dot {
+  border-color: currentColor !important;
 }
