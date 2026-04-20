@@ -19,7 +19,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 }
 
 .fc-col-header-cell-cushion {
-  color: #9ca3af; /* gray-400 */
+  color: #5580ca; /* gray-400 */
   text-transform: capitalize;
   font-size: 0.75rem;
 }
