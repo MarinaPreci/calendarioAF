@@ -12,21 +12,24 @@ function getColorForType(type) {
 }
 
 const MONTH_COLORS = [
-  'bg-red-200', 'bg-orange-200', 'bg-yellow-200', 'bg-green-200',
-  'bg-teal-200', 'bg-blue-200', 'bg-indigo-200', 'bg-purple-200',
-  'bg-pink-200', 'bg-gray-200', 'bg-lime-200', 'bg-rose-200'
+  'bg-red-400', 'bg-orange-400', 'bg-yellow-400', 'bg-green-400',
+  'bg-teal-400', 'bg-blue-400', 'bg-indigo-400', 'bg-purple-400',
+  'bg-pink-400', 'bg-slate-400', 'bg-lime-400', 'bg-rose-400'
 ];
 
 export default function CalendarGrid({ races = [], onOpenRace = () => {}, onAddRace = () => {} }) {
-  const [selectedType, setSelectedType] = useState(''); // 👈 filtro activo
+  const [selectedType, setSelectedType] = useState('');
 
-  const months = [
-    //new Date(2025, 10, 1),
-    //new Date(2025, 11, 1),
-    ...Array.from({ length: 12 }, (_, i) => new Date(2026, i, 2))
-  ];
+  // 1. Calculamos el mes y año actual
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
 
-  // Filtramos las carreras si hay un tipo seleccionado
+  // 2. Generamos 12 meses empezando desde el actual
+  const months = Array.from({ length: 12 }, (_, i) => {
+    return new Date(currentYear, currentMonth + i, 1);
+  });
+
   const filteredRaces = selectedType
     ? races.filter(r => r.type === selectedType)
     : races;
@@ -52,14 +55,15 @@ export default function CalendarGrid({ races = [], onOpenRace = () => {}, onAddR
   });
 
   return (
-    <div className="bg-blue-50 min-h-screen p-4">
-      {/* 🔽 Selector de tipo */}
+    // Fondo gris oscuro aplicado aquí 🔽
+    <div className="bg-gray-900 min-h-screen p-4">
+      
       <div className="mb-4 flex items-center gap-2">
-        <label className="text-sm font-semibold text-gray-800">
+        <label className="text-sm font-semibold text-gray-200">
           Filtrar por tipo:
         </label>
         <select
-          className="border border-gray-300 rounded p-1 text-sm"
+          className="border border-gray-600 bg-gray-800 text-white rounded p-1 text-sm outline-none"
           value={selectedType}
           onChange={e => setSelectedType(e.target.value)}
         >
@@ -72,46 +76,41 @@ export default function CalendarGrid({ races = [], onOpenRace = () => {}, onAddR
         </select>
       </div>
 
-      {/* 🗓️ Calendarios */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {months.map((monthStart, idx) => (
           <div
             key={idx}
-            className="bg-white/80 rounded-2xl shadow-sm p-2 hover:shadow-lg transition-shadow duration-200 w-full"
+            className="bg-gray-800 rounded-2xl shadow-xl p-2 border border-gray-700 hover:border-blue-500 transition-all duration-300 w-full"
           >
             <div
-              className={`text-center text-sm font-semibold mb-2 p-2 rounded ${MONTH_COLORS[idx % MONTH_COLORS.length]} text-gray-900 bg-gradient-to-r from-white/30 to-white/10`}
+              className={`text-center text-sm font-bold mb-2 p-2 rounded-xl ${MONTH_COLORS[idx % MONTH_COLORS.length]} text-gray-900 uppercase tracking-wider`}
             >
               {dayjs(monthStart).locale('es').format('MMMM YYYY')}
             </div>
 
-            <FullCalendar
-              plugins={[dayGridPlugin, interactionPlugin]}
-              initialView="dayGridMonth"
-              locale={esLocale}
-              firstDay={1}
-              headerToolbar={false}
-              height="auto"
-              dayMaxEvents={3}
-              fixedWeekCount={false}
-              initialDate={monthStart}
-              events={eventsByMonth[idx]}
-              selectable={true}
-              selectMirror={true}
-              dateClick={(info) => {
-                if (typeof onAddRace === 'function')
-                  onAddRace(info.dateStr || info.date);
-              }}
-              eventClick={(info) => {
-                info.jsEvent.preventDefault();
-                if (typeof onOpenRace === 'function')
-                  onOpenRace(info.event.extendedProps);
-              }}
-              eventClassNames={() =>
-                'rounded-md cursor-pointer hover:scale-105 transform transition duration-200 ease-out shadow-sm hover:shadow-md'
-              }
-              dayCellClassNames={() => 'p-1'}
-            />
+            <div className="calendar-dark-theme">
+                <FullCalendar
+                plugins={[dayGridPlugin, interactionPlugin]}
+                initialView="dayGridMonth"
+                locale={esLocale}
+                firstDay={1}
+                headerToolbar={false}
+                height="auto"
+                dayMaxEvents={2}
+                fixedWeekCount={false}
+                initialDate={monthStart}
+                events={eventsByMonth[idx]}
+                selectable={true}
+                dateClick={(info) => onAddRace(info.dateStr || info.date)}
+                eventClick={(info) => {
+                    info.jsEvent.preventDefault();
+                    onOpenRace(info.event.extendedProps);
+                }}
+                // Ajuste de colores internos del calendario
+                eventClassNames={() => 'rounded-md cursor-pointer text-xs font-medium'}
+                dayCellClassNames={() => 'text-gray-300 border-gray-700'}
+                />
+            </div>
           </div>
         ))}
       </div>
